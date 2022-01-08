@@ -1,0 +1,43 @@
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: my CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: 构建, 部署
+    runs-on: ubuntu-latest
+    steps:
+    # - uses: actions/checkout@v2
+    # - name: 下载 git submodule
+      # uses: srt32/git-actions@v0.0.3
+      # with:
+      #   args: git submodule update --init --recursive
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v2
+    - name: 部署到服务器
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /server
+          git clone git@github.com:ZYQIO/mock.git
+          ls
+          pwd 
+          pm2 stop 0
+          pm2 delete 0
+          rm -rf project1
+          mv mock project1
+          cd project1
+          npm install
+          pm2 start index.js
+          pm2 list 
+    - name: 完成
+      run: echo deploy by ftp
